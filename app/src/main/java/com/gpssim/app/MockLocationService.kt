@@ -95,9 +95,15 @@ class MockLocationService : Service() {
                 }
             }
 
-            ACTION_PAUSE -> setPaused(true)
-            ACTION_RESUME -> setPaused(false)
-            ACTION_SET_SPEED -> setSpeed(intent.getDoubleExtra(EXTRA_SPEED, 5.0))
+            ACTION_PAUSE, ACTION_RESUME, ACTION_SET_SPEED -> {
+                // 若行程曾被系統回收（例如從通知列操作），先接續上次的模擬
+                if (tickJob == null) restoreOrStop()
+                when (intent.action) {
+                    ACTION_PAUSE -> setPaused(true)
+                    ACTION_RESUME -> setPaused(false)
+                    else -> setSpeed(intent.getDoubleExtra(EXTRA_SPEED, 5.0))
+                }
+            }
 
             ACTION_STOP -> {
                 stopSimulation(clearSession = true)
@@ -106,16 +112,18 @@ class MockLocationService : Service() {
 
             else -> {
                 // 服務被系統回收後重新啟動（START_STICKY），接續上次的模擬
-                if (tickJob == null) {
-                    when (val s = session.load()) {
-                        is SessionStore.Session.Fixed -> runFixed(s.point)
-                        is SessionStore.Session.Route -> runRoute(s.config, s.travelled)
-                        null -> stopSimulation(clearSession = true)
-                    }
-                }
+                if (tickJob == null) restoreOrStop()
             }
         }
         return START_STICKY
+    }
+
+    private fun restoreOrStop() {
+        when (val s = session.load()) {
+            is SessionStore.Session.Fixed -> runFixed(s.point)
+            is SessionStore.Session.Route -> runRoute(s.config, s.travelled)
+            null -> stopSimulation(clearSession = true)
+        }
     }
 
     override fun onDestroy() {
