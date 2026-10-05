@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">GPS 模擬器</string>
+
+    <string name="mode_fixed">定點模擬</string>
+    <string name="mode_route">路徑步行</string>
+    <string name="status_idle">尚未開始模擬</string>
+    <string name="locate">置中</string>
+    <string name="more">設定</string>
+
+    <string name="hint_tap_target">點擊地圖選擇目標點（長按有更多選項）</string>
+    <string name="input_coord">輸入座標</string>
+    <string name="save_favorite">收藏</string>
+    <string name="favorites">常用座標</string>
+
+    <string name="hint_tap_route">點擊地圖依序新增路徑點</string>
+    <string name="undo">復原</string>
+    <string name="clear">清除</string>
+    <string name="save_route">儲存</string>
+    <string name="load_route">載入</string>
+    <string name="speed">速度</string>
+    <string name="preset_walk">步行 5</string>
+    <string name="preset_brisk">快走 7</string>
+    <string name="preset_run">慢跑 10</string>
+    <string name="preset_bike">騎車 18</string>
+    <string name="preset_car">開車 50</string>
+    <string name="loop_once">單程</string>
+    <string name="loop_loop">循環</string>
+    <string name="loop_round_trip">來回</string>
+
+    <string name="start">開始模擬</string>
+    <string name="move_to_target">移動到目標</string>
+    <string name="restart_route">重新開始路徑</string>
+    <string name="action_pause">暫停</string>
+    <string name="action_resume">繼續</string>
+    <string name="action_stop">停止</string>
+
+    <string name="notif_channel_name">GPS 模擬</string>
+    <string name="notif_title_preparing">GPS 模擬準備中</string>
+    <string name="notif_title_fixed">定點模擬中</string>
+    <string name="notif_title_route">路徑步行模擬中</string>
+    <string name="notif_title_route_paused">路徑步行已暫停</string>
+    <string name="notif_title_route_finished">已抵達終點</string>
+
+    <string name="msg_need_location_permission">需要定位權限才能在背景維持模擬</string>
+    <string name="msg_pick_target_first">請先在地圖上點選目標點</string>
+    <string name="msg_need_two_points">路徑至少需要兩個點</string>
+    <string name="msg_invalid_coord">座標格式錯誤，請輸入「緯度, 經度」</string>
+    <string name="msg_no_favorites">尚無常用座標，可先在地圖上選點後按「收藏」</string>
+    <string name="msg_no_routes">尚無已儲存的路徑</string>
+    <string name="msg_saved">已儲存</string>
+    <string name="msg_deleted">已刪除</string>
+    <string name="msg_battery_ok">已在電池最佳化白名單中</string>
+    <string name="msg_no_position">目前沒有可用的位置</string>
+
+    <string name="dlg_mock_title">請設定模擬位置應用程式</string>
+    <string name="dlg_mock_message">Android 需要在開發者選項中指定本 App 為「模擬位置應用程式」：\n\n1. 設定 → 關於手機 → 連點「版本號碼」7 次以啟用開發者選項\n2. 設定 → 系統 → 開發者選項 → 選取模擬位置應用程式 → 選擇「GPS 模擬器」</string>
+    <string name="dlg_open_dev_settings">開啟開發者選項</string>
+    <string name="dlg_permission_title">缺少權限</string>
+    <string name="dlg_permission_message">需要「精確位置」權限才能啟動背景模擬服務，請允許定位權限後再試一次。</string>
+    <string name="dlg_error_message">啟動模擬時發生錯誤，請確認定位功能已開啟後再試一次。</string>
+    <string name="dlg_help_title">使用說明</string>
+    <string name="dlg_help_message">【初次設定】\n• 開發者選項 → 選取模擬位置應用程式 → GPS 模擬器\n• 建議在「設定」選單中加入電池最佳化白名單，避免背景模擬被系統中斷\n\n【定點模擬】\n• 點擊地圖或輸入座標選擇目標，按「開始模擬」\n• 模擬中選擇新目標後按「移動到目標」即可瞬移\n• 「收藏」可儲存常用座標，「常用座標」可隨時呼叫\n\n【路徑步行】\n• 點擊地圖依序新增路徑點，點擊路徑點可刪除\n• 設定速度與單程／循環／來回後按「開始模擬」\n• 模擬中可隨時調整速度、暫停或繼續\n\n模擬會以前景服務在背景持續運作，可從通知列暫停或停止。</string>
+    <string name="ok">確定</string>
+    <string name="cancel">取消</string>
+    <string name="delete">刪除</string>
+
+    <string name="menu_dev_settings">開發者選項（模擬位置）</string>
+    <string name="menu_battery">電池最佳化白名單</string>
+    <string name="menu_help">使用說明</string>
+</resources>
