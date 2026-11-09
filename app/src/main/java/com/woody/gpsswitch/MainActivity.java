@@ -1,5 +1,6 @@
 package com.woody.gpsswitch;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,7 +8,10 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.graphics.Typeface;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
@@ -107,7 +111,15 @@ public class MainActivity extends Activity {
         root.addView(button("② 開啟手機定位", v -> runAction(Actions.LOC_ON)));
         root.addView(button("③ 開啟虛擬定位", v -> runAction(Actions.MOCK_ON)));
 
-        root.addView(header("4. 加到桌面"));
+        root.addView(header("4. 懸浮按鈕"));
+        root.addView(note("在任何畫面上都會有一顆可以拖動的圓形按鈕，點一下展開 ①②③。顏色代表目前狀態：藍色＝真實定位、紫色＝虛擬定位、灰色＝定位關閉。"));
+        LinearLayout floatRow = new LinearLayout(this);
+        floatRow.setOrientation(LinearLayout.HORIZONTAL);
+        floatRow.addView(button("開啟懸浮按鈕", v -> startFloating()), weight());
+        floatRow.addView(button("關閉懸浮按鈕", v -> FloatingService.stop(this)), weight());
+        root.addView(floatRow);
+
+        root.addView(header("5. 加到桌面"));
         root.addView(note("也可以長按本 App 圖示使用捷徑，或在下拉選單「編輯」裡加入快速設定磚。"));
         root.addView(button("把 ① 加到桌面", v -> pin(Actions.REAL_OFF, R.string.label_real_off, R.drawable.sc_off)));
         root.addView(button("把 ② 加到桌面", v -> pin(Actions.LOC_ON, R.string.label_loc_on, R.drawable.sc_on)));
@@ -234,6 +246,23 @@ public class MainActivity extends Activity {
         if (pkg.isEmpty() || ShizukuShell.isValidPackageName(pkg)) {
             Actions.prefs(this).edit().putString(Actions.KEY_PKG, pkg).apply();
         }
+    }
+
+    private void startFloating() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "請允許「顯示在其他應用程式上層」，回來後再按一次", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName())));
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            // 通知用來顯示「懸浮按鈕執行中」與關閉按鈕；拒絕也能用
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2001);
+        }
+        FloatingService.start(this);
+        log("已開啟懸浮按鈕");
     }
 
     private void pin(String action, int labelRes, int iconRes) {

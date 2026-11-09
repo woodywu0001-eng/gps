@@ -7,4 +7,6 @@
     <string name="long_real_off">關閉手機定位與虛擬定位</string>
     <string name="long_loc_on">開啟手機定位</string>
     <string name="long_mock_on">開啟虛擬定位</string>
+    <string name="label_toggle_float">懸浮按鈕</string>
+    <string name="long_toggle_float">開啟／關閉懸浮按鈕</string>
 </resources>

@@ -34,4 +34,15 @@
             android:targetClass="com.woody.gpsswitch.ActionActivity"
             android:targetPackage="com.woody.gpsswitch" />
     </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_on"
+        android:shortcutId="toggle_float"
+        android:shortcutLongLabel="@string/long_toggle_float"
+        android:shortcutShortLabel="@string/label_toggle_float">
+        <intent
+            android:action="com.woody.gpsswitch.TOGGLE_FLOAT"
+            android:targetClass="com.woody.gpsswitch.ActionActivity"
+            android:targetPackage="com.woody.gpsswitch" />
+    </shortcut>
 </shortcuts>

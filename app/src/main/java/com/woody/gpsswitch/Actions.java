@@ -1,7 +1,11 @@
 package com.woody.gpsswitch;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.os.Build;
+import android.provider.Settings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +16,11 @@ public final class Actions {
     public static final String REAL_OFF = "com.woody.gpsswitch.REAL_OFF"; // 關定位＋關虛擬定位
     public static final String LOC_ON = "com.woody.gpsswitch.LOC_ON";     // 開手機定位
     public static final String MOCK_ON = "com.woody.gpsswitch.MOCK_ON";   // 開虛擬定位
+    public static final String TOGGLE_FLOAT = "com.woody.gpsswitch.TOGGLE_FLOAT"; // 開關懸浮按鈕
+
+    public static final int STATE_OFF = 0;   // 定位關閉
+    public static final int STATE_REAL = 1;  // 真實定位
+    public static final int STATE_MOCK = 2;  // 虛擬定位
 
     static final String KEY_PKG = "mock_pkg";
     static final String KEY_FORCE_STOP = "force_stop";
@@ -77,5 +86,36 @@ public final class Actions {
         String msg = label(ctx, action) + "：完成";
         if (REAL_OFF.equals(action) && !hasPkg) msg += "（未設定虛擬定位 App，只關了定位）";
         return msg;
+    }
+
+    /** 目前的定位狀態。請在背景執行緒呼叫。 */
+    public static int currentState(Context ctx) {
+        boolean locOn;
+        if (Build.VERSION.SDK_INT >= 28) {
+            LocationManager lm = ctx.getSystemService(LocationManager.class);
+            locOn = lm != null && lm.isLocationEnabled();
+        } else {
+            locOn = Settings.Secure.getInt(ctx.getContentResolver(),
+                    Settings.Secure.LOCATION_MODE, 0) != 0;
+        }
+        if (!locOn) return STATE_OFF;
+
+        String pkg = mockPackage(ctx);
+        if (ShizukuShell.isValidPackageName(pkg) && ShizukuShell.ensureReady(1500) == null) {
+            ShizukuShell.Result r = ShizukuShell.exec("appops get " + pkg + " android:mock_location");
+            if (r.code == 0 && r.output.contains("allow")) return STATE_MOCK;
+        }
+        return STATE_REAL;
+    }
+
+    /** 打開虛擬定位 App，方便直接選位置。 */
+    public static void launchMockApp(Context ctx) {
+        Intent launch = ctx.getPackageManager().getLaunchIntentForPackage(mockPackage(ctx));
+        if (launch == null) return;
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            ctx.startActivity(launch);
+        } catch (Exception ignored) {
+        }
     }
 }

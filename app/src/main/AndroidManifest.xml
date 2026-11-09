@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 懸浮按鈕 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- 讓 App 能找到虛擬定位 App 的啟動畫面（Android 11+ 套件可見性） -->
     <queries>
         <intent>
@@ -40,9 +46,20 @@
                 <action android:name="com.woody.gpsswitch.REAL_OFF" />
                 <action android:name="com.woody.gpsswitch.LOC_ON" />
                 <action android:name="com.woody.gpsswitch.MOCK_ON" />
+                <action android:name="com.woody.gpsswitch.TOGGLE_FLOAT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <!-- 懸浮按鈕 -->
+        <service
+            android:name=".FloatingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Floating shortcut button for switching location source" />
+        </service>
 
         <!-- 下拉選單的快速設定磚 -->
         <service
