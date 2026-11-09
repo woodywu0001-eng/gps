@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Icon;
 import android.location.LocationManager;
@@ -27,8 +28,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +35,7 @@ import android.widget.Toast;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** 懸浮按鈕：可拖動的圓形按鈕，點一下展開 ①②③。 */
+/** 懸浮按鈕：三顆可拖動的圓形按鈕 1、2、3。 */
 public class FloatingService extends Service {
 
     static final String ACTION_STOP = "com.woody.gpsswitch.STOP_FLOATING";
@@ -52,16 +51,9 @@ public class FloatingService extends Service {
     private WindowManager wm;
     private WindowManager.LayoutParams lp;
     private LinearLayout root;
-    private FrameLayout bubble;
-    private ImageView bubbleIcon;
-    private GradientDrawable bubbleBg;
-    private LinearLayout panel;
     private BroadcastReceiver locationReceiver;
 
-    private boolean expanded;
     private boolean busy;
-    private int collapsedX;
-    private int collapsedY;
 
     public static void start(Context c) {
         c.startForegroundService(new Intent(c, FloatingService.class));
@@ -119,10 +111,7 @@ public class FloatingService extends Service {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (root != null) main.postDelayed(() -> {
-            collapse();
-            snapToEdge();
-        }, 300);
+        if (root != null) main.postDelayed(this::snapToEdge, 300);
     }
 
     // ---------------- 前景服務通知 ----------------
@@ -158,34 +147,22 @@ public class FloatingService extends Service {
 
     // ---------------- 畫面 ----------------
 
+    private static final int COLOR_1 = 0xFF5F6368;
+    private static final int COLOR_2 = 0xFF1A73E8;
+    private static final int COLOR_3 = 0xFF9334E6;
+
+    private final TextView[] buttons = new TextView[3];
+    private final GradientDrawable[] buttonBgs = new GradientDrawable[3];
+
     private void showOverlay() {
         wm = getSystemService(WindowManager.class);
-        int size = dp(56);
-
-        bubbleBg = new GradientDrawable();
-        bubbleBg.setShape(GradientDrawable.OVAL);
-        bubbleBg.setColor(0xFF1A73E8);
-        bubble = new FrameLayout(this);
-        bubble.setBackground(bubbleBg);
-        bubble.setElevation(dp(4));
-        bubbleIcon = new ImageView(this);
-        bubbleIcon.setImageResource(R.drawable.ic_tile_on);
-        bubble.addView(bubbleIcon, new FrameLayout.LayoutParams(dp(30), dp(30), Gravity.CENTER));
-        bubble.setOnTouchListener(new DragListener());
-
-        panel = new LinearLayout(this);
-        panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setVisibility(View.GONE);
-        panel.addView(panelButton("① 關定位+虛擬", 0xFF5F6368, v -> doAction(Actions.REAL_OFF)));
-        panel.addView(panelButton("② 開手機定位", 0xFF1A73E8, v -> doAction(Actions.LOC_ON)));
-        panel.addView(panelButton("③ 開虛擬定位", 0xFF9334E6, v -> doAction(Actions.MOCK_ON)));
-        panel.addView(panelButton("✕ 關閉懸浮按鈕", 0xFF333333, v -> stopSelf()));
 
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(6), dp(6), dp(6), dp(6));
-        root.addView(bubble, new LinearLayout.LayoutParams(size, size));
-        root.addView(panel);
+        root.setPadding(dp(4), dp(4), dp(4), dp(4));
+        addButton(0, "1", COLOR_1, Actions.REAL_OFF);
+        addButton(1, "2", COLOR_2, Actions.LOC_ON);
+        addButton(2, "3", COLOR_3, Actions.MOCK_ON);
 
         lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -195,9 +172,8 @@ public class FloatingService extends Service {
                 PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.TOP | Gravity.START;
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        lp.x = Actions.prefs(this).getInt(KEY_X, dm.widthPixels - size - dp(12));
+        lp.x = Actions.prefs(this).getInt(KEY_X, dm.widthPixels - dp(56));
         lp.y = Actions.prefs(this).getInt(KEY_Y, dm.heightPixels / 3);
-        updateSideGravity();
         wm.addView(root, lp);
 
         locationReceiver = new BroadcastReceiver() {
@@ -215,90 +191,51 @@ public class FloatingService extends Service {
         refreshState();
     }
 
-    private TextView panelButton(String text, int color, View.OnClickListener l) {
+    private void addButton(int index, String text, int color, String action) {
         TextView t = new TextView(this);
         t.setText(text);
         t.setTextColor(0xFFFFFFFF);
-        t.setTextSize(15);
-        t.setPadding(dp(14), dp(10), dp(14), dp(10));
+        t.setTextSize(18);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setGravity(Gravity.CENTER);
         GradientDrawable bg = new GradientDrawable();
+        bg.setShape(GradientDrawable.OVAL);
         bg.setColor(color);
-        bg.setCornerRadius(dp(20));
         t.setBackground(bg);
         t.setElevation(dp(3));
-        t.setOnClickListener(l);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.topMargin = dp(6);
-        t.setLayoutParams(p);
-        return t;
-    }
-
-    private boolean onRightSide() {
-        int w = root.getWidth() > 0 ? root.getWidth() : dp(68);
-        return lp.x + w / 2 > getResources().getDisplayMetrics().widthPixels / 2;
-    }
-
-    private void updateSideGravity() {
-        boolean right = lp.x > getResources().getDisplayMetrics().widthPixels / 2 - dp(34);
-        root.setGravity(right ? Gravity.END : Gravity.START);
-    }
-
-    private void toggle() {
-        if (expanded) collapse();
-        else expand();
-    }
-
-    private void expand() {
-        if (expanded || busy) return;
-        expanded = true;
-        collapsedX = lp.x;
-        collapsedY = lp.y;
-        int oldW = root.getWidth();
-        boolean right = onRightSide();
-        panel.setVisibility(View.VISIBLE);
-        root.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        int newW = root.getMeasuredWidth();
-        int newH = root.getMeasuredHeight();
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        if (right) lp.x = collapsedX + oldW - newW;   // 靠右時往左展開
-        if (lp.y + newH > dm.heightPixels - dp(48)) {   // 太靠下時往上移
-            lp.y = Math.max(0, dm.heightPixels - dp(48) - newH);
-        }
-        wm.updateViewLayout(root, lp);
-    }
-
-    private void collapse() {
-        if (!expanded) return;
-        expanded = false;
-        panel.setVisibility(View.GONE);
-        lp.x = collapsedX;
-        lp.y = collapsedY;
-        wm.updateViewLayout(root, lp);
+        t.setOnTouchListener(new DragListener(action));
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(44), dp(44));
+        if (index > 0) p.topMargin = dp(8);
+        root.addView(t, p);
+        buttons[index] = t;
+        buttonBgs[index] = bg;
     }
 
     private void snapToEdge() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        int w = root.getWidth() > 0 ? root.getWidth() : dp(68);
-        int h = root.getHeight() > 0 ? root.getHeight() : dp(68);
+        int w = root.getWidth() > 0 ? root.getWidth() : dp(52);
+        int h = root.getHeight() > 0 ? root.getHeight() : dp(172);
         lp.x = (lp.x + w / 2 < dm.widthPixels / 2) ? 0 : dm.widthPixels - w;
         lp.y = Math.max(0, Math.min(lp.y, dm.heightPixels - h - dp(48)));
-        updateSideGravity();
         wm.updateViewLayout(root, lp);
         savePosition();
     }
 
     private void savePosition() {
-        int x = expanded ? collapsedX : lp.x;
-        int y = expanded ? collapsedY : lp.y;
-        Actions.prefs(this).edit().putInt(KEY_X, x).putInt(KEY_Y, y).apply();
+        Actions.prefs(this).edit().putInt(KEY_X, lp.x).putInt(KEY_Y, lp.y).apply();
     }
 
+    /** 按住拖動可以移動整組按鈕；輕點就執行該按鈕的動作。 */
     private class DragListener implements View.OnTouchListener {
+        private final String action;
         private final int slop = ViewConfiguration.get(FloatingService.this).getScaledTouchSlop();
         private int startX, startY;
         private float downX, downY;
         private boolean moved;
+
+        DragListener(String action) {
+            this.action = action;
+        }
 
         @Override
         public boolean onTouch(View v, MotionEvent e) {
@@ -309,18 +246,13 @@ public class FloatingService extends Service {
                     downX = e.getRawX();
                     downY = e.getRawY();
                     moved = false;
+                    v.setScaleX(0.9f);
+                    v.setScaleY(0.9f);
                     return true;
                 case MotionEvent.ACTION_MOVE:
                     int dx = (int) (e.getRawX() - downX);
                     int dy = (int) (e.getRawY() - downY);
-                    if (!moved && Math.hypot(dx, dy) > slop) {
-                        moved = true;
-                        if (expanded) {
-                            collapse();
-                            startX = lp.x;
-                            startY = lp.y;
-                        }
-                    }
+                    if (!moved && Math.hypot(dx, dy) > slop) moved = true;
                     if (moved) {
                         lp.x = startX + dx;
                         lp.y = startY + dy;
@@ -328,10 +260,14 @@ public class FloatingService extends Service {
                     }
                     return true;
                 case MotionEvent.ACTION_UP:
+                    v.setScaleX(1f);
+                    v.setScaleY(1f);
                     if (moved) snapToEdge();
-                    else toggle();
+                    else doAction(action);
                     return true;
                 case MotionEvent.ACTION_CANCEL:
+                    v.setScaleX(1f);
+                    v.setScaleY(1f);
                     if (moved) snapToEdge();
                     return true;
                 default:
@@ -345,15 +281,14 @@ public class FloatingService extends Service {
     private void doAction(String action) {
         if (busy) return;
         busy = true;
-        collapse();
-        bubble.setAlpha(0.5f);
+        root.setAlpha(0.5f);
         executor.execute(() -> {
             final String msg = Actions.run(getApplicationContext(), action);
             final int state = Actions.currentState(getApplicationContext());
             main.post(() -> {
                 busy = false;
                 if (root == null) return;
-                bubble.setAlpha(1f);
+                root.setAlpha(1f);
                 applyState(state);
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                 if (Actions.MOCK_ON.equals(action) && msg.endsWith("完成")) {
@@ -373,16 +308,11 @@ public class FloatingService extends Service {
         });
     }
 
+    /** 目前狀態對應的按鈕加上白色外框：1＝定位關閉、2＝真實定位、3＝虛擬定位。 */
     private void applyState(int state) {
-        if (state == Actions.STATE_OFF) {
-            bubbleBg.setColor(0xFF5F6368);
-            bubbleIcon.setImageResource(R.drawable.ic_tile_off);
-        } else if (state == Actions.STATE_MOCK) {
-            bubbleBg.setColor(0xFF9334E6);
-            bubbleIcon.setImageResource(R.drawable.ic_tile_mock);
-        } else {
-            bubbleBg.setColor(0xFF1A73E8);
-            bubbleIcon.setImageResource(R.drawable.ic_tile_on);
+        int current = state == Actions.STATE_OFF ? 0 : (state == Actions.STATE_MOCK ? 2 : 1);
+        for (int i = 0; i < 3; i++) {
+            buttonBgs[i].setStroke(i == current ? dp(3) : 0, 0xFFFFFFFF);
         }
     }
 

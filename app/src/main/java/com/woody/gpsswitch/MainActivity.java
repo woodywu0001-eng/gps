@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
         root.addView(button("③ 開啟虛擬定位", v -> runAction(Actions.MOCK_ON)));
 
         root.addView(header("4. 懸浮按鈕"));
-        root.addView(note("在任何畫面上都會有一顆可以拖動的圓形按鈕，點一下展開 ①②③。顏色代表目前狀態：藍色＝真實定位、紫色＝虛擬定位、灰色＝定位關閉。"));
+        root.addView(note("畫面上會出現 1、2、3 三顆按鈕，按住可以拖動。1＝關定位+虛擬、2＝開手機定位、3＝開虛擬定位；有白框的是目前狀態。關閉請按通知列的「關閉懸浮按鈕」。"));
         LinearLayout floatRow = new LinearLayout(this);
         floatRow.setOrientation(LinearLayout.HORIZONTAL);
         floatRow.addView(button("開啟懸浮按鈕", v -> startFloating()), weight());

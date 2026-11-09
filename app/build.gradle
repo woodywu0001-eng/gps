@@ -10,8 +10,8 @@ android {
         applicationId = 'com.woody.gpsswitch'
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = '1.1'
+        versionCode = 3
+        versionName = '1.2'
     }
 
     // 固定的簽章金鑰：之後重新編譯的版本可以直接覆蓋安裝，不用先解除安裝
