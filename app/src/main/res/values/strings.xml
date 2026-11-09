@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPS 切換</string>
+    <string name="label_real_off">關定位+虛擬</string>
+    <string name="label_loc_on">開手機定位</string>
+    <string name="label_mock_on">開虛擬定位</string>
+    <string name="long_real_off">關閉手機定位與虛擬定位</string>
+    <string name="long_loc_on">開啟手機定位</string>
+    <string name="long_mock_on">開啟虛擬定位</string>
+</resources>

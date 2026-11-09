@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 長按 App 圖示時出現的捷徑 -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_off"
+        android:shortcutId="real_off"
+        android:shortcutLongLabel="@string/long_real_off"
+        android:shortcutShortLabel="@string/label_real_off">
+        <intent
+            android:action="com.woody.gpsswitch.REAL_OFF"
+            android:targetClass="com.woody.gpsswitch.ActionActivity"
+            android:targetPackage="com.woody.gpsswitch" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_on"
+        android:shortcutId="loc_on"
+        android:shortcutLongLabel="@string/long_loc_on"
+        android:shortcutShortLabel="@string/label_loc_on">
+        <intent
+            android:action="com.woody.gpsswitch.LOC_ON"
+            android:targetClass="com.woody.gpsswitch.ActionActivity"
+            android:targetPackage="com.woody.gpsswitch" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_mock"
+        android:shortcutId="mock_on"
+        android:shortcutLongLabel="@string/long_mock_on"
+        android:shortcutShortLabel="@string/label_mock_on">
+        <intent
+            android:action="com.woody.gpsswitch.MOCK_ON"
+            android:targetClass="com.woody.gpsswitch.ActionActivity"
+            android:targetPackage="com.woody.gpsswitch" />
+    </shortcut>
+</shortcuts>
